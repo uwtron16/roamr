@@ -7,3 +7,13 @@ Mobile phones and mobile robots have many common requirements:
 - energy efficiency
 
 What if we turned the iPhone into a robot?
+
+## Architecture
+
+Goal:
+
+- make systems integration of software components simple 
+
+Ideas: 
+- WASM binaries to decouple autonomy logic
+- Websockets for performant communication
