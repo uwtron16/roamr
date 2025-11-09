@@ -21,10 +21,22 @@ static uint8_t IMAGE[MAX_W * MAX_H * 4];
 static int32_t CUR_W = 256;
 static int32_t CUR_H = 256;
 
+// LiDAR points storage (2D projection x,y)
+static const int32_t MAX_POINTS = 20000;
+static float POINTS[2 * MAX_POINTS];
+static int32_t POINTS_COUNT = 0;
+
 void reset_poses() {
 	for (int32_t i = 0; i < 3 * MAX_POSES; ++i) {
 		POSES[i] = 0.0f;
 	}
+}
+
+void reset_points() {
+	for (int32_t i = 0; i < 2 * MAX_POINTS; ++i) {
+		POINTS[i] = 0.0f;
+	}
+	POINTS_COUNT = 0;
 }
 
 // Set a single pose at index (0-based). Extra indices are ignored.
@@ -36,15 +48,26 @@ void set_pose(int32_t idx, float x, float y, float theta) {
 	POSES[base + 2] = theta;
 }
 
+// Set a single LiDAR point at index (0-based).
+void set_point(int32_t idx, float x, float y) {
+	if (idx < 0 || idx >= MAX_POINTS) return;
+	int32_t base = idx * 2;
+	POINTS[base + 0] = x;
+	POINTS[base + 1] = y;
+	if (idx + 1 > POINTS_COUNT) POINTS_COUNT = idx + 1;
+}
+
 static inline int32_t clampi(int32_t v, int32_t lo, int32_t hi) {
 	return v < lo ? lo : (v > hi ? hi : v);
 }
 
 // Very simple nearest-neighbor mapping: autoscale poses to fit into WxH canvas,
 // center them, and plot white pixels. Theta is currently unused for rendering.
-void draw_pose_map(int32_t count, int32_t width, int32_t height) {
-	if (count < 0) count = 0;
-	if (count > MAX_POSES) count = MAX_POSES;
+void draw_map(int32_t poseCount, int32_t pointCount, int32_t width, int32_t height) {
+	if (poseCount < 0) poseCount = 0;
+	if (poseCount > MAX_POSES) poseCount = MAX_POSES;
+	if (pointCount < 0) pointCount = 0;
+	if (pointCount > MAX_POINTS) pointCount = MAX_POINTS;
 	if (width <= 0) width = 256;
 	if (height <= 0) height = 256;
 	if (width > MAX_W) width = MAX_W;
@@ -67,11 +90,21 @@ void draw_pose_map(int32_t count, int32_t width, int32_t height) {
 	// Compute bounds
 	float minX = FLT_MAX, minY = FLT_MAX, maxX = -FLT_MAX, maxY = -FLT_MAX;
 	bool any = false;
-	for (int32_t i = 0; i < count; ++i) {
+	for (int32_t i = 0; i < poseCount; ++i) {
 		int32_t base = i * 3;
 		float px = POSES[base + 0];
 		float py = POSES[base + 1];
 		if (px == 0.0f && py == 0.0f && POSES[base + 2] == 0.0f) continue; // treat zeroed as empty
+		if (px < minX) minX = px;
+		if (py < minY) minY = py;
+		if (px > maxX) maxX = px;
+		if (py > maxY) maxY = py;
+		any = true;
+	}
+	for (int32_t i = 0; i < pointCount; ++i) {
+		int32_t base = i * 2;
+		float px = POINTS[base + 0];
+		float py = POINTS[base + 1];
 		if (px < minX) minX = px;
 		if (py < minY) minY = py;
 		if (px > maxX) maxX = px;
@@ -99,7 +132,24 @@ void draw_pose_map(int32_t count, int32_t width, int32_t height) {
 	float cx = (minX + maxX) * 0.5f;
 	float cy = (minY + maxY) * 0.5f;
 
-	for (int32_t i = 0; i < count; ++i) {
+	// Draw points as red pixels
+	for (int32_t i = 0; i < pointCount; ++i) {
+		int32_t base = i * 2;
+		float px = POINTS[base + 0];
+		float py = POINTS[base + 1];
+		int32_t ix = (int32_t)((px - cx) * scale + (float)CUR_W * 0.5f);
+		int32_t iy = (int32_t)((cy - py) * scale + (float)CUR_H * 0.5f);
+		ix = clampi(ix, 0, CUR_W - 1);
+		iy = clampi(iy, 0, CUR_H - 1);
+		const int32_t o = iy * stride + ix * 4;
+		IMAGE[o + 0] = 255; // R
+		IMAGE[o + 1] = 0;   // G
+		IMAGE[o + 2] = 0;   // B
+		IMAGE[o + 3] = 255;
+	}
+
+	// Draw poses as 3x3 white dots on top
+	for (int32_t i = 0; i < poseCount; ++i) {
 		int32_t base = i * 3;
 		float px = POSES[base + 0];
 		float py = POSES[base + 1];
@@ -121,6 +171,11 @@ void draw_pose_map(int32_t count, int32_t width, int32_t height) {
 			}
 		}
 	}
+}
+
+// Back-compat: draw only poses
+void draw_pose_map(int32_t count, int32_t width, int32_t height) {
+	draw_map(count, 0, width, height);
 }
 
 // Image accessors

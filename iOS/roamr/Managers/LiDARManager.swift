@@ -15,7 +15,9 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 	@Published var isActive = false
 	@Published var showDataSheet = false
 	@Published var pointsLog = [Int]()
+	@Published var latestPoints: [SIMD3<Float>] = []
 	@Published var savedPoses: [(Float, Float, Float)] = []
+	@Published var savedPointsSets: [[(Float, Float)]] = []
 
 	var serverURL: String = "ws://192.168.1.2:8080"
 		
@@ -78,6 +80,7 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 		
 		let maxPointsToSend = 1000
 		let count = min(points.count, maxPointsToSend)
+		latestPoints = Array(points.prefix(count))
 		var out: [[Float]] = []
 		out.reserveCapacity(count)
 		for i in 0..<count {

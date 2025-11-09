@@ -79,9 +79,9 @@ struct LiDARView: View {
 				HStack {
 					Spacer()
 					Button {
-						saveCurrentPose()
+						saveCurrentPoseAndPoints()
 					} label: {
-						Text("Save Current Pose")
+						Text("Save Current Pose & Points")
 							.font(.headline)
 							.padding(.horizontal, 14)
 							.padding(.vertical, 10)
@@ -142,11 +142,21 @@ struct LiDARView: View {
 		return (x, z, yaw)
 	}
 	
-	private func saveCurrentPose() {
+	private func saveCurrentPoseAndPoints() {
 		guard let (x, y, yaw) = currentPoseXZYaw() else { return }
+		// Save pose
 		lidarManager.savedPoses.append((x, y, yaw))
-		print(String(format: "Saved pose #%d: x=%.3f y=%.3f yaw=%.3f",
-					 lidarManager.savedPoses.count, x, y, yaw))
+		// Capture latest LiDAR points (project to XZ plane)
+		let latest = lidarManager.latestPoints
+		let maxPts = min(latest.count, 5_000)
+		var projected: [(Float, Float)] = []
+		projected.reserveCapacity(maxPts)
+		for i in 0..<maxPts {
+			let p = latest[i]
+			projected.append((p.x, p.z))
+		}
+		lidarManager.savedPointsSets.append(projected)
+		print(String(format: "Saved pose & %d points (#%d)", projected.count, lidarManager.savedPoses.count))
 	}
 	
 	private func showMap() {
@@ -155,6 +165,9 @@ struct LiDARView: View {
 			print("No saved poses yet.")
 			return
 		}
+		// Flatten all saved point sets
+		let allPointSets = lidarManager.savedPointsSets
+		let flatPoints: [(Float, Float)] = allPointSets.flatMap { $0 }
 		do {
 			guard let wasmURL = Bundle.main.url(forResource: "map", withExtension: "wasm") else {
 				print("map.wasm not found in bundle (skipping wasm call).")
@@ -181,8 +194,18 @@ struct LiDARView: View {
 			// Draw
 			let width: Int32 = 256
 			let height: Int32 = 256
-			if let draw = instance.exports[function: "draw_pose_map"] {
-				_ = try draw([.i32(UInt32(poses.count)), .i32(UInt32(width)), .i32(UInt32(height))])
+			// Send points
+			if let resetPts = instance.exports[function: "reset_points"] {
+				_ = try resetPts([])
+			}
+			if let setPoint = instance.exports[function: "set_point"] {
+				for (idx, pt) in flatPoints.enumerated() {
+					_ = try setPoint([.i32(UInt32(idx)), .f32(pt.0.bitPattern), .f32(pt.1.bitPattern)])
+				}
+			}
+			// Draw combined map (poses + points)
+			if let drawCombined = instance.exports[function: "draw_map"] {
+				_ = try drawCombined([.i32(UInt32(poses.count)), .i32(UInt32(flatPoints.count)), .i32(UInt32(width)), .i32(UInt32(height))])
 			}
 			
 			// Read dimensions
