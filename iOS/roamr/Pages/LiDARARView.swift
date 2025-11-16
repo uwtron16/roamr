@@ -152,8 +152,8 @@ struct LiDARView: View {
 		var projected: [(Float, Float)] = []
 		projected.reserveCapacity(maxPts)
 		for i in 0..<maxPts {
-			let p = latest[i]
-			projected.append((p.x, p.z))
+			let point = latest[i]
+			projected.append((point.x, point.z))
 		}
 		lidarManager.savedPointsSets.append(projected)
 		print(String(format: "Saved pose & %d points (#%d)", projected.count, lidarManager.savedPoses.count))
