@@ -6,8 +6,6 @@
 //
 
 import SwiftUI
-
-import SwiftUI
 import MapKit
 import CoreMotion
 
@@ -15,11 +13,10 @@ struct DataView: View {
 	@EnvironmentObject var lidarManager: LiDARManager
 	@StateObject private var motionManager = MotionManager()
 	@State private var region = MKCoordinateRegion(
-		center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832),
+		center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832), // hardcoded to Toronto
 		span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
 	)
 
-	
 	private let cardSpacing: CGFloat = 12
 
 	var body: some View {
@@ -68,7 +65,6 @@ struct SensorCard<Content: View>: View {
 	}
 }
 
-
 final class MotionManager: ObservableObject {
 	private var motion = CMMotionManager()
 	private var timer: Timer?
@@ -76,7 +72,6 @@ final class MotionManager: ObservableObject {
 	@Published var acceleration: CMAcceleration = .init(x: 0, y: 0, z: 0)
 	@Published var rotation: CMRotationRate = .init(x: 0, y: 0, z: 0)
 	@Published var currentRotation: CMRotationRate = .init(x: 0, y: 0, z: 0)
-
 
 	init() {
 		startMotionUpdates()
@@ -90,23 +85,19 @@ final class MotionManager: ObservableObject {
 			if let data = self.motion.accelerometerData {
 				self.acceleration = data.acceleration
 			}
-			
-			let dt = 0.1
+
+			let deltaTime = 0.1
 
 			if let gyro = self.motion.gyroData {
 				self.rotation = gyro.rotationRate
-				
-				self.currentRotation.x += gyro.rotationRate.x * dt
-				self.currentRotation.y += gyro.rotationRate.y * dt
-				self.currentRotation.z += gyro.rotationRate.z * dt
+
+				self.currentRotation.x += gyro.rotationRate.x * deltaTime
+				self.currentRotation.y += gyro.rotationRate.y * deltaTime
+				self.currentRotation.z += gyro.rotationRate.z * deltaTime
 			}
 		}
 	}
 }
-
-
-import SwiftUI
-import CoreMotion
 
 struct AccelerometerView: View {
 	let data: CMAcceleration
@@ -144,7 +135,7 @@ struct AccelerometerView: View {
 	}
 
 	private func appendData(_ newData: CMAcceleration) {
-		
+
 		yData.append(newData.y)
 		zData.append(newData.z)
 
@@ -166,9 +157,9 @@ struct AxisGraph: View {
 			Text(label)
 				.font(.caption)
 				.foregroundColor(color)
-			GeometryReader { geo in
-				let w = geo.size.width
-				let h = geo.size.height
+			GeometryReader { geometry in
+				let w = geometry.size.width
+				let h = geometry.size.height
 				let maxY = (values.max() ?? 1)
 				let minY = (values.min() ?? -1)
 				let range = maxY - minY == 0 ? 1 : maxY - minY
@@ -193,9 +184,6 @@ struct AxisGraph: View {
 	}
 }
 
-
-
-
 struct NumberStreamView: View {
 	let numbers: [Int]
 	var body: some View {
@@ -207,7 +195,6 @@ struct NumberStreamView: View {
 		.padding()
 	}
 }
-
 
 struct GyroscopeView: View {
 	let rotation: CMRotationRate
@@ -241,21 +228,21 @@ struct UserLocation: Identifiable {
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 	private let manager = CLLocationManager()
-	
+
 	@Published var region = MKCoordinateRegion(
 		center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832),
 		span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
 	)
-	
-	@Published var userLocation: UserLocation? = nil
-	
+
+	@Published var userLocation: UserLocation?
+
 	override init() {
 		super.init()
 		manager.delegate = self
 		manager.requestWhenInUseAuthorization()
 		manager.startUpdatingLocation()
 	}
-	
+
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		guard let location = locations.first else { return }
 		let coord = location.coordinate
@@ -270,7 +257,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 struct MapView: View {
 	@StateObject private var locationManager = LocationManager()
-	
+
 	var body: some View {
 		Map(
 			coordinateRegion: $locationManager.region,
@@ -281,4 +268,3 @@ struct MapView: View {
 		.edgesIgnoringSafeArea(.all)
 	}
 }
-

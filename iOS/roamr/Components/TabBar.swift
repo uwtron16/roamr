@@ -11,7 +11,7 @@ enum AppPage {
 	case ARView
 	case data
 	case settings
-	
+
 	var iconName: String {
 		switch self {
 		case .ARView: return "macbook.and.vision.pro"
@@ -24,11 +24,11 @@ enum AppPage {
 struct FloatingBubbleTabBar: View {
 	@EnvironmentObject var lidarManager: LiDARManager
 	@Binding var currentPage: AppPage
-	
+
 	var body: some View {
 		HStack(spacing: 30) {
 			TabBubble(page: .ARView, currentPage: $currentPage)
-			
+
 			if currentPage == .ARView {
 				TabBubble(page: .data, currentPage: $currentPage) {
 					withAnimation {
@@ -37,7 +37,7 @@ struct FloatingBubbleTabBar: View {
 				}
 				.transition(.scale.combined(with: .opacity))
 			}
-			
+
 			TabBubble(page: .settings, currentPage: $currentPage)
 		}
 		.padding(12)
@@ -53,14 +53,14 @@ struct FloatingBubbleTabBar: View {
 struct TabBubble: View {
 	let page: AppPage
 	@Binding var currentPage: AppPage
-	var closure: (() -> Void)? = nil
-	
+	var closure: (() -> Void)?
+
 	var isActive: Bool { currentPage == page }
-	
+
 	var backgroundColor: Color {
 		isActive ? Color("AccentColor") : Color.gray.opacity(0.2)
 	}
-	
+
 	var scale: CGFloat {
 		isActive ? 1.1 : 1.0
 	}
@@ -72,7 +72,6 @@ struct TabBubble: View {
 	var fontSize: CGFloat {
 		isActive ? 20 : 18
 	}
-	
 
 	var body: some View {
 		Button {

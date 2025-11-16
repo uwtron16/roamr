@@ -28,7 +28,7 @@ struct ContentView: View {
 				.ignoresSafeArea()
 				.frame(maxWidth: .infinity, maxHeight: .infinity)
 				.animation(.easeInOut, value: currentPage)
-				
+
 				VStack {
 					Spacer()
 
@@ -41,7 +41,7 @@ struct ContentView: View {
 					FloatingBubbleTabBar(currentPage: $currentPage)
 				}
 			}
-			
+
 //			LiDARView()
 //				.edgesIgnoringSafeArea(.all)
 //				.onAppear {
@@ -56,17 +56,17 @@ struct ContentView: View {
 //					Button("Start Server") {
 //						server.start()
 //					}
-//					
+//
 //					Button("Start WebPage") {
 //						showWebPage.toggle()
 //					}
-//					
+//
 //					Button("Send Message to Web Page") {
 //						server.broadcast("Hello from SwiftUI 🚀")
 //					}
 //				}
 //				.padding()
-//				
+//
 //				if showWebPage {
 //					WebView(fileName: "index")
 //				}
