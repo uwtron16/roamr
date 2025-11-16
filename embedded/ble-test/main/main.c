@@ -37,10 +37,10 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
     switch (event) {
         case ESP_GATTS_REG_EVT:
             ESP_LOGI(GATTS_TAG, "GATT server registered");
-            
+
             esp_ble_gap_set_device_name(DEVICE_NAME);
             esp_ble_gap_config_adv_data_raw(raw_adv_data, sizeof(raw_adv_data));
-            
+
             esp_ble_gatts_create_service(gatts_if, &(esp_gatt_srvc_id_t){
                 .is_primary = true,
                 .id.inst_id = 0,
@@ -53,7 +53,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
             ESP_LOGI(GATTS_TAG, "Service created");
             gatts_handle_table[0] = param->create.service_handle;
             esp_ble_gatts_start_service(gatts_handle_table[0]);
-            
+
             esp_ble_gatts_add_char(gatts_handle_table[0], &(esp_bt_uuid_t){
                 .len = ESP_UUID_LEN_16,
                 .uuid.uuid16 = GATTS_CHAR_UUID,

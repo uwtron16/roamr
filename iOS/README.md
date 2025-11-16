@@ -16,3 +16,5 @@ Core components:
 
 - Protobuf serialization/deserialization
 - Connect sensors to WASM
+
+- manage different PRODUCT_BUNDLE_IDENTIFIER under project.pbxproj
