@@ -14,11 +14,11 @@ struct SettingsPage: View {
 	@EnvironmentObject var lidarManager: LiDARManager
 	@State private var wasmRunner: WasmRunner?
 	@State private var wasmResult: String = "..."
-	
+
 	private var appVersion: String {
 		Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
 	}
-	
+
 	var body: some View {
 		VStack(spacing: 30) {
 			Spacer()
@@ -26,18 +26,18 @@ struct SettingsPage: View {
 			Text("roamr")
 				.font(.largeTitle)
 				.fontWeight(.bold)
-			
+
 			// App version
 			Text("Version \(appVersion)")
 				.font(.subheadline)
 				.foregroundColor(.secondary)
-			
+
 			// Description
 			Text("Really Open-Source Autonomous Robot")
 				.font(.caption)
 				.multilineTextAlignment(.center)
 				.padding(.horizontal, 30)
-			
+
 			Text("Result: \(wasmResult)")
 				.font(.title2)
 
@@ -49,7 +49,7 @@ struct SettingsPage: View {
 			.background(Color.blue)
 			.foregroundColor(.white)
 			.cornerRadius(10)
-			
+
 			Spacer()
 		}
 		.padding()
@@ -57,12 +57,12 @@ struct SettingsPage: View {
 //			self.loadRunner()
 		}
 	}
-	
-	
-	
 
 
-	
+
+
+
+
 	func test() throws {
 		do {
 			// --- Step 1: Find and load the .wasm file ---

@@ -15,7 +15,7 @@ extension Color {
 		case background
 //		case textPrimary
 //		case textSecondary
-		
+
 		/// Returns a SwiftUI `Color` loaded from Assets.xcassets
 		var color: Color {
 			Color(self.rawValue)

@@ -15,11 +15,11 @@ struct DataView: View {
 	@EnvironmentObject var lidarManager: LiDARManager
 	@StateObject private var motionManager = MotionManager()
 	@State private var region = MKCoordinateRegion(
-		center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832),
+		center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832), // hardcoded to Toronto
 		span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
 	)
 
-	
+
 	private let cardSpacing: CGFloat = 12
 
 	var body: some View {
@@ -90,12 +90,12 @@ final class MotionManager: ObservableObject {
 			if let data = self.motion.accelerometerData {
 				self.acceleration = data.acceleration
 			}
-			
+
 			let dt = 0.1
 
 			if let gyro = self.motion.gyroData {
 				self.rotation = gyro.rotationRate
-				
+
 				self.currentRotation.x += gyro.rotationRate.x * dt
 				self.currentRotation.y += gyro.rotationRate.y * dt
 				self.currentRotation.z += gyro.rotationRate.z * dt
@@ -144,7 +144,7 @@ struct AccelerometerView: View {
 	}
 
 	private func appendData(_ newData: CMAcceleration) {
-		
+
 		yData.append(newData.y)
 		zData.append(newData.z)
 
@@ -241,21 +241,21 @@ struct UserLocation: Identifiable {
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 	private let manager = CLLocationManager()
-	
+
 	@Published var region = MKCoordinateRegion(
 		center: CLLocationCoordinate2D(latitude: 43.6532, longitude: -79.3832),
 		span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
 	)
-	
+
 	@Published var userLocation: UserLocation? = nil
-	
+
 	override init() {
 		super.init()
 		manager.delegate = self
 		manager.requestWhenInUseAuthorization()
 		manager.startUpdatingLocation()
 	}
-	
+
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		guard let location = locations.first else { return }
 		let coord = location.coordinate
@@ -270,7 +270,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
 struct MapView: View {
 	@StateObject private var locationManager = LocationManager()
-	
+
 	var body: some View {
 		Map(
 			coordinateRegion: $locationManager.region,
@@ -281,4 +281,3 @@ struct MapView: View {
 		.edgesIgnoringSafeArea(.all)
 	}
 }
-

@@ -197,4 +197,3 @@ int32_t get_image_pixel_u32(int32_t index) {
 }
 
 } // extern "C"
-

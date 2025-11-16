@@ -15,7 +15,7 @@ import Foundation
 func swiftHostPrintCallback(_ str: UnsafePointer<CChar>?) {
 	guard let cString = str else { return }
 	let message = String(cString: cString)
-	
+
 	// Print the message from WASM
 	print("[WASM] \(message)")
 }

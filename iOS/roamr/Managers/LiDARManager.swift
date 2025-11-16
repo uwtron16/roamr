@@ -20,20 +20,20 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 	@Published var savedPointsSets: [[(Float, Float)]] = []
 
 	var serverURL: String = "ws://192.168.1.2:8080"
-		
+
 	let session = ARSession()
-	
+
 	override init() {
 		super.init()
 		session.delegate = self
 	}
-	
+
 	func startSession() {
 		guard ARWorldTrackingConfiguration.isSupported else {
 			print("ARWorldTrackingConfiguration not supported on this device.")
 			return
 		}
-		
+
 		let config = ARWorldTrackingConfiguration()
 		// Enable scene reconstruction or frame semantics for devices with LiDAR
 		if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
@@ -44,18 +44,18 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 			config.sceneReconstruction = .mesh
 		}
 		config.environmentTexturing = .automatic
-		
+
 		session.run(config)
 		isActive = true
 		print("ARSession started")
 	}
-	
+
 	func stopSession() {
 		session.pause()
 		isActive = false
 		print("ARSession paused")
 	}
-	
+
 	func toggleSession() {
 		if isActive {
 			stopSession()
@@ -63,7 +63,7 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 			startSession()
 		}
 	}
-	
+
 	// MARK: - ARSessionDelegate
 	func session(_ session: ARSession, didUpdate frame: ARFrame) {
 		// Use rawFeaturePoints (fast, already computed by ARKit)
@@ -74,10 +74,10 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 			// If rawFeaturePoints not available, optionally handle sceneDepth; omitted here for brevity
 		}
 	}
-	
+
 	private func handle(points: [SIMD3<Float>], cameraTransform: simd_float4x4) {
 		guard !points.isEmpty else { return }
-		
+
 		let maxPointsToSend = 1000
 		let count = min(points.count, maxPointsToSend)
 		latestPoints = Array(points.prefix(count))
