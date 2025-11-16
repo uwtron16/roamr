@@ -13,3 +13,4 @@ repos:
     rev: 0.57.1
     hooks:
     -   id: swiftlint
+        args: [--fix]
