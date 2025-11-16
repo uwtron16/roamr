@@ -12,11 +12,18 @@ docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/
 -o <out-filename> \
 <filename>
 ```
-The `--target=wasm32-wasi` flag adds support for I/O functionality.
+The `--target=wasm32-wasi` flag adds support for I/O functionality. Alternatively, the `--target=wasm32-wasip1-threads` enables experimental threading.
 
 Examples:
 ```sh
-docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/clang++ --target=wasm32-wasi -o slam_main.wasm slam_main.cpp
+docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/clang++ \
+--target=wasm32-wasip1-threads \
+-pthread \
+-Wl,--import-memory \
+-Wl,--export-memory \
+-Wl,--shared-memory \
+-Wl,--max-memory=67108864 \
+-o slam_main.wasm slam_main.cpp
 ```
 
 
@@ -33,8 +40,8 @@ docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/
   -o map.wasm map.cpp
 ```
 
-3. Run the file using [Wasmer](https://docs.wasmer.io/runtime) or another runtime
+3. Run the file using [Wasmtime](https://docs.wasmtime.dev/) or another runtime
 
 ```sh
-wasmer run slam_main.wasm
+wasmtime --wasi threads slam_main.wasm
 ```
