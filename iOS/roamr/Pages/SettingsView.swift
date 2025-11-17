@@ -11,7 +11,7 @@ import WasmKit
 
 struct SettingsPage: View {
 	@EnvironmentObject var lidarManager: LiDARManager
-	@State private var wasmRunner: WasmRunner?
+//	@State private var wasmRunner: WasmRunner?
 	@State private var wasmResult: String = "..."
 
 	private var appVersion: String {

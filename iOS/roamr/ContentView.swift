@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
 	@EnvironmentObject var lidarManager: LiDARManager
-	let server = WebSocketServerManager()
+	// let server = WebSocketServerManager()
 	@State var currentPage: AppPage = .ARView
 
 	var body: some View {

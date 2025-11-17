@@ -5,7 +5,7 @@
 
 2. (Recommended) Use the pre-built Docker image to build a WASM file
 
-Build any C++ file with: 
+Build any C++ file with:
 ```sh
 docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/clang \
 --target=wasm32-wasi \
