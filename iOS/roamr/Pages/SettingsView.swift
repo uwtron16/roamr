@@ -97,7 +97,7 @@ struct SettingsPage: View {
 		}
 		
 		// 2. Read WASM file
-		guard let wasmURL = Bundle.main.url(forResource: "main", withExtension: "wasm") else { // ⬅️ UPDATED: "add" to "main"
+		guard let wasmURL = Bundle.main.url(forResource: "slam_main", withExtension: "wasm") else { // ⬅️ UPDATED: "add" to "main"
 			// self.wasmResult = "Error: main.wasm file not found in bundle." // Assuming self.wasmResult is defined elsewhere
 			print("Error: main.wasm file not found in bundle.")
 			return
