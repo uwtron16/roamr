@@ -69,7 +69,7 @@ struct SettingsPage: View {
 		var wasmModule: wasm_module_t? = nil
 		var moduleInstance: wasm_module_inst_t? = nil
 		var execEnv: wasm_exec_env_t? = nil
-		
+
 		let wasmFileName = "main.wasm" // Set the correct file name here
 
 		// 1. Initialize the WAMR Runtime
@@ -165,7 +165,7 @@ struct SettingsPage: View {
 				}
 				
 				// 6. Look up the exported "main" function
-				let funcName = "main" // ⬅️ UPDATED: "testadd" to "main"
+				let funcName = "_start" // ⬅️ UPDATED: "testadd" to "main"
 				let funcInst = wasm_runtime_lookup_function(instance, funcName)
 				
 				guard let function = funcInst else {
@@ -245,6 +245,12 @@ typealias wasm_module_t = OpaquePointer
 typealias wasm_module_inst_t = OpaquePointer
 typealias wasm_exec_env_t = OpaquePointer
 typealias wasm_function_inst_t = OpaquePointer
+
+// Memory allocator types (from wasm_c_api.h)
+typealias mem_alloc_type_t = UInt32
+let Alloc_With_Pool: mem_alloc_type_t = 0
+let Alloc_With_Allocator: mem_alloc_type_t = 1
+let Alloc_With_System_Allocator: mem_alloc_type_t = 2
 
 // --- WAMR API Functions (Assuming existence via Bridging Header/Module Map) ---
 // We assume these are available as defined in the provided headers.

@@ -15,6 +15,7 @@
 		56AAE1782ECD46AF0057E1DF /* libm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 56AAE1772ECD46AF0057E1DF /* libm.tbd */; };
 		56AAE17A2ECD46B80057E1DF /* libc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 56AAE1792ECD46B80057E1DF /* libc.tbd */; };
 		56AAE17C2ECD46C20057E1DF /* libdl.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 56AAE17B2ECD46C20057E1DF /* libdl.tbd */; };
+		56B658962ED23A6D00A35411 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 56B658952ED23A6D00A35411 /* libc++.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,6 +74,7 @@
 		56B658912ED12C1400A35411 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
 		56B658922ED12C1400A35411 /* roamr.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = roamr.swift; sourceTree = "<group>"; };
 		56B658932ED12C1400A35411 /* roamr-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "roamr-Bridging-Header.h"; sourceTree = "<group>"; };
+		56B658952ED23A6D00A35411 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -88,6 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				56B658962ED23A6D00A35411 /* libc++.tbd in Frameworks */,
 				56AAE17C2ECD46C20057E1DF /* libdl.tbd in Frameworks */,
 				56AAE17A2ECD46B80057E1DF /* libc.tbd in Frameworks */,
 				56AAE1782ECD46AF0057E1DF /* libm.tbd in Frameworks */,
@@ -122,6 +125,7 @@
 		56AAE1542ECD467D0057E1DF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				56B658952ED23A6D00A35411 /* libc++.tbd */,
 				56B658942ED12C1400A35411 /* roamr */,
 				56AAE17B2ECD46C20057E1DF /* libdl.tbd */,
 				56AAE1792ECD46B80057E1DF /* libc.tbd */,
