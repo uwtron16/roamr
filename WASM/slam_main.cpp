@@ -1,6 +1,9 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <chrono>
+
+constexpr int logIntervalMs = 100;
 
 int main(){
     std::mutex m;
@@ -8,6 +11,7 @@ int main(){
 
     auto logSensor = [&m, &shared_data](){
         while(true){
+            std::this_thread::sleep_for(std::chrono::milliseconds(logIntervalMs)); 
             std::lock_guard<std::mutex> lk(m);
             std::cout << "Logging " << shared_data << std::endl;
         }

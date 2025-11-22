@@ -287,7 +287,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"roamr/Preview Content\"";
-				DEVELOPMENT_TEAM = 6N3CP34ZJA;
+				DEVELOPMENT_TEAM = 542KRJUPYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Our robot needs your camera to see where it’s going—otherwise it just bumps into stuff!";
@@ -310,7 +310,7 @@
 					"-ldl",
 					"-lm",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ders.roamr;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tcz.roamr;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "roamr/roamr-Bridging-Header.h";
@@ -330,7 +330,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"roamr/Preview Content\"";
-				DEVELOPMENT_TEAM = 6N3CP34ZJA;
+				DEVELOPMENT_TEAM = 542KRJUPYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Our robot needs your camera to see where it’s going—otherwise it just bumps into stuff!";
@@ -353,7 +353,7 @@
 					"-ldl",
 					"-lm",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.ders.roamr;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tcz.roamr;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "roamr/roamr-Bridging-Header.h";
