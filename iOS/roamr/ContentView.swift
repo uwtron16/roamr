@@ -22,6 +22,8 @@ struct ContentView: View {
 						EmptyView()
 					case .settings:
 						SettingsPage()
+					case .bluetooth:
+						BluetoothView()
 					}
 				}
 				.ignoresSafeArea()

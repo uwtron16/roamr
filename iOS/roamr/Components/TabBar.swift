@@ -11,11 +11,13 @@ enum AppPage {
 	case ARView
 	case data
 	case settings
+	case bluetooth
 
 	var iconName: String {
 		switch self {
 		case .ARView: return "macbook.and.vision.pro"
 		case .data: return "text.page.fill"
+		case .bluetooth: return "wifi"
 		case .settings: return "gearshape.fill"
 		}
 	}
@@ -38,6 +40,8 @@ struct FloatingBubbleTabBar: View {
 				.transition(.scale.combined(with: .opacity))
 			}
 
+			TabBubble(page: .bluetooth, currentPage: $currentPage)
+			
 			TabBubble(page: .settings, currentPage: $currentPage)
 		}
 		.padding(12)
