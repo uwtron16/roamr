@@ -3,7 +3,7 @@
 
 int main() {
     // Attempt to allocate 10MB to demonstrate
-    void* big_chunk = malloc(1 * 1024 * 1024); 
+    void* big_chunk = malloc(1 * 1024 * 1024);
     if (big_chunk) {
         printf("Memory allocation successful.\n");
         free(big_chunk);

@@ -1,6 +1,6 @@
 // Save this as add.c
 
-#include <stdint.h> 
+#include <stdint.h>
 
 /**
  * C function matching the Wasm signature: (i32, i32) -> i32
