@@ -58,7 +58,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
                 .len = ESP_UUID_LEN_16,
                 .uuid.uuid16 = GATTS_CHAR_UUID,
             }, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
+            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
             NULL, NULL);
             break;
 
@@ -77,7 +77,21 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
             break;
 
         case ESP_GATTS_WRITE_EVT:
-            ESP_LOGI(GATTS_TAG, "Received message: %.*s", param->write.len, param->write.value);
+            if (param->write.need_rsp) {
+                ESP_LOGI(GATTS_TAG, "Received message WITH response: %.*s", param->write.len, param->write.value);
+
+                esp_gatt_rsp_t rsp;
+                memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
+                rsp.attr_value.handle = param->write.handle;
+                rsp.attr_value.len = param->write.len;
+                memcpy(rsp.attr_value.value, param->write.value, param->write.len);
+
+                esp_ble_gatts_send_response(gatts_if, param->write.conn_id,
+                                           param->write.trans_id, ESP_GATT_OK, &rsp);
+                ESP_LOGI(GATTS_TAG, "Response sent");
+            } else {
+                ESP_LOGI(GATTS_TAG, "Received message WITHOUT response: %.*s", param->write.len, param->write.value);
+            }
             break;
 
         default:
