@@ -10,13 +10,19 @@ What if we turned the iPhone into a robot?
 
 ## Architecture
 
-Goal:
+iOS host app: 
 
-- make systems integration of software components simple
+- exposes the core sensor data through iOS APIs
+- runs WASM bytecode using WAMR
+- communicates with ESP32 over BLE to control motors
 
-Ideas:
-- WASM binaries to decouple autonomy logic
-- Websockets for performant communication
+WASM module:
+
+- multi-threaded application with autonomoy logic
+
+ESP32 firmware:
+
+- recieves commands over BLE and uses SimpleFOC to control motors
 
 ## Setup
 
