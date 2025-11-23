@@ -3,6 +3,9 @@
 #include <thread>
 #include <chrono>
 
+#define WASM_IMPORT(A, B) __attribute__((__import_module__((A)), __import_name__((B))))
+WASM_IMPORT("host", "read_imu") float read_imu();
+
 constexpr int logIntervalMs = 100;
 
 int main(){
@@ -13,7 +16,7 @@ int main(){
         while(true){
             std::this_thread::sleep_for(std::chrono::milliseconds(logIntervalMs)); 
             std::lock_guard<std::mutex> lk(m);
-            std::cout << "Logging " << shared_data << std::endl;
+            std::cout << "Step:" << shared_data << ", IMU "<< read_imu() << std::endl;
         }
     };
 
