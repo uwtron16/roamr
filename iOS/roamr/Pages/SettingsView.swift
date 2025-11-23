@@ -9,15 +9,42 @@ import Foundation
 import SwiftUI
 import CoreMotion
 
+// Global variables for IMU data and Wasm export
 let motionManager = CMMotionManager()
 let imuLock = NSLock()
-var currentZAccel: Float = 0.0
+
+struct IMUData {
+    var timestamp: Double
+    var acc_x: Float
+    var acc_y: Float
+    var acc_z: Float
+    var gyro_x: Float
+    var gyro_y: Float
+    var gyro_z: Float
+    var mag_x: Float
+    var mag_y: Float
+    var mag_z: Float
+}
+
+var currentIMUData = IMUData(timestamp: 0, acc_x: 0, acc_y: 0, acc_z: 0, gyro_x: 0, gyro_y: 0, gyro_z: 0, mag_x: 0, mag_y: 0, mag_z: 0)
+
+// Global WAMR State
+var isWAMRInitialized = false
+var globalNativeSymbolPtr: UnsafeMutablePointer<NativeSymbol>?
+var globalModuleNamePtr: UnsafeMutablePointer<CChar>?
 
 @_cdecl("read_imu_impl")
-func read_imu_impl(exec_env: wasm_exec_env_t?) -> Float {
+func read_imu_impl(exec_env: wasm_exec_env_t?, ptr: UnsafeMutableRawPointer?) {
+    guard let ptr = ptr else { return }
+    
+    // Bind memory to IMUData struct
+    let imuDataPtr = ptr.bindMemory(to: IMUData.self, capacity: 1)
+    
     imuLock.lock()
-    defer { imuLock.unlock() }
-    return currentZAccel
+    let data = currentIMUData
+    imuLock.unlock()
+    
+    imuDataPtr.pointee = data
 }
 
 struct SettingsPage: View {
@@ -65,12 +92,43 @@ struct SettingsPage: View {
 
 	func runTest(operand1: Int32, operand2: Int32) {
         DispatchQueue.global(qos: .userInitiated).async {
+            // Start sensors
             if motionManager.isAccelerometerAvailable {
                 motionManager.accelerometerUpdateInterval = 0.1
                 motionManager.startAccelerometerUpdates(to: .main) { (data, error) in
                     if let data = data {
                         imuLock.lock()
-                        currentZAccel = Float(data.acceleration.z)
+                        currentIMUData.timestamp = data.timestamp
+                        currentIMUData.acc_x = Float(data.acceleration.x)
+                        currentIMUData.acc_y = Float(data.acceleration.y)
+                        currentIMUData.acc_z = Float(data.acceleration.z)
+                        imuLock.unlock()
+                    }
+                }
+            }
+            if motionManager.isGyroAvailable {
+                motionManager.gyroUpdateInterval = 0.1
+                motionManager.startGyroUpdates(to: .main) { (data, error) in
+                    if let data = data {
+                        imuLock.lock()
+                        // Use latest timestamp from any sensor? Or keep separate?
+                        // For now, let's update timestamp on accel only or any?
+                        // Usually we want synchronized, but for this simple test, updating fields is fine.
+                        currentIMUData.gyro_x = Float(data.rotationRate.x)
+                        currentIMUData.gyro_y = Float(data.rotationRate.y)
+                        currentIMUData.gyro_z = Float(data.rotationRate.z)
+                        imuLock.unlock()
+                    }
+                }
+            }
+            if motionManager.isMagnetometerAvailable {
+                motionManager.magnetometerUpdateInterval = 0.1
+                motionManager.startMagnetometerUpdates(to: .main) { (data, error) in
+                    if let data = data {
+                        imuLock.lock()
+                        currentIMUData.mag_x = Float(data.magneticField.x)
+                        currentIMUData.mag_y = Float(data.magneticField.y)
+                        currentIMUData.mag_z = Float(data.magneticField.z)
                         imuLock.unlock()
                     }
                 }
@@ -80,40 +138,46 @@ struct SettingsPage: View {
             var moduleInstance: wasm_module_inst_t?
             var execEnv: wasm_exec_env_t?
             
-            // 1. Initialize the WAMR Runtime
-            print("Initializing WAMR runtime...")
-            
-            let symbolName = "read_imu"
-            let signature = "()f" // no input, float output
-            
-            let symbolPtr = symbolName.withCString { strdup($0) }
-            let signaturePtr = signature.withCString { strdup($0) }
-            
-            let cFunction: @convention(c) (wasm_exec_env_t?) -> Float = read_imu_impl
-            
-            var nativeSymbol = NativeSymbol(
-                symbol: UnsafePointer(symbolPtr),
-                func_ptr: unsafeBitCast(cFunction, to: UnsafeMutableRawPointer.self),
-                signature: UnsafePointer(signaturePtr),
-                attachment: nil
-            )
-            
-            let moduleName = "host"
-            let moduleNamePtr = moduleName.withCString { strdup($0) }
-            
-            let initSuccess = withUnsafeMutablePointer(to: &nativeSymbol) { nativeSymbolPtr -> Bool in
-                var initArgs = RuntimeInitArgs()
-                initArgs.mem_alloc_type = Alloc_With_System_Allocator
-                initArgs.n_native_symbols = 1
-                initArgs.native_symbols = nativeSymbolPtr
-                initArgs.native_module_name = UnsafePointer(moduleNamePtr)
+            // 1. Initialize the WAMR Runtime (Singleton)
+            if !isWAMRInitialized {
+                print("Initializing WAMR runtime...")
+                guard wasm_runtime_init() else {
+                    print("Fatal Error: WAMR runtime initialization failed.")
+                    return
+                }
                 
-                return wasm_runtime_full_init(&initArgs)
-            }
-            
-            guard initSuccess else {
-                print("Fatal Error: WAMR runtime initialization failed.")
-                return
+                // Prepare Native Symbols
+                let symbolName = "read_imu"
+                let signature = "(*)" // pointer argument
+                
+                let symbolPtr = symbolName.withCString { strdup($0) }
+                let signaturePtr = signature.withCString { strdup($0) }
+                
+                let cFunction: @convention(c) (wasm_exec_env_t?, UnsafeMutableRawPointer?) -> Void = read_imu_impl
+                
+                // Allocate NativeSymbol array on the heap to ensure it persists
+                let nativeSymbolPtr = UnsafeMutablePointer<NativeSymbol>.allocate(capacity: 1)
+                nativeSymbolPtr.initialize(to: NativeSymbol(
+                    symbol: UnsafePointer(symbolPtr),
+                    func_ptr: unsafeBitCast(cFunction, to: UnsafeMutableRawPointer.self),
+                    signature: UnsafePointer(signaturePtr),
+                    attachment: nil
+                ))
+                
+                let moduleName = "host"
+                let moduleNamePtr = moduleName.withCString { strdup($0) }
+                
+                // Save globals to prevent leak/GC issues (though we leak them intentionally for the app life)
+                globalNativeSymbolPtr = nativeSymbolPtr
+                globalModuleNamePtr = UnsafeMutablePointer(mutating: moduleNamePtr)
+                
+                // Register Natives
+                guard wasm_runtime_register_natives(moduleNamePtr, nativeSymbolPtr, 1) else {
+                    print("Error: Failed to register native symbols")
+                    return
+                }
+                
+                isWAMRInitialized = true
             }
             
             // Defer block ensures cleanup runs when the function exits.
@@ -127,15 +191,15 @@ struct SettingsPage: View {
                 if let mod = wasmModule {
                     wasm_runtime_unload(mod)
                 }
-                wasm_runtime_destroy()
+                // DO NOT destroy runtime, as it cannot be easily re-initialized
+                // wasm_runtime_destroy()
                 
+                // Stop sensors
                 motionManager.stopAccelerometerUpdates()
+                motionManager.stopGyroUpdates()
+                motionManager.stopMagnetometerUpdates()
                 
-                free(symbolPtr)
-                free(signaturePtr)
-                free(moduleNamePtr)
-                
-                print("WAMR runtime destroyed.")
+                print("WAMR module unloaded.")
             }
             
             // 2. Read WASM file
