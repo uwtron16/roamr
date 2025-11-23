@@ -23,7 +23,7 @@ docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/
 -Wl,--export-memory \
 -Wl,--shared-memory \
 -Wl,--max-memory=67108864 \
--o slam_main.wasm slam_main.cpp
+-o slam_main.wasm slam_main.cpp telemetry.cpp
 ```
 
 
@@ -45,3 +45,10 @@ docker run -v `pwd`:/src -w /src ghcr.io/webassembly/wasi-sdk /opt/wasi-sdk/bin/
 ```sh
 wasmtime --wasi threads slam_main.wasm
 ```
+## Autonomy Logic
+
+TODO: Measure nominal extrinsics for sensors
+
+- mapping
+- localization
+- planning/control

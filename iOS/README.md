@@ -1,5 +1,13 @@
 # iOS App
 
+## Getting started
+
+1. [Enable developer mode on iPhone](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device)
+
+2. Under the `Signing & Capabilities` tab in XCode, select a team (e.g. Personal Team) and enter a unique identifier.
+
+3. Click Build.
+
 Core components:
 
 ## How build new WAMR
@@ -16,13 +24,11 @@ Core components:
 
 ## WebAssembly Runner
 
-- WasmInterpreter: Swift wrapper around Wasm3
-  - WasmType.swift: datatypes (float32, float64, int32, int64)
+- [WAMR: WebAssemby Micro Runtime](https://bytecodealliance.github.io/wamr.dev/)
 
 ## Sensor Access
 
 - Managers/LiDARManager.swift
-
 
 ## TODO:
 

@@ -10,13 +10,27 @@ What if we turned the iPhone into a robot?
 
 ## Architecture
 
-Goal:
+### iOS host app:
 
-- make systems integration of software components simple
+- exposes the core sensor data through iOS APIs
+    - Camera
+    - LiDAR (iPhone Pro 12+)
+    - IMU
+- runs WASM bytecode using statically compiled WAMR iwasm
+- communicates with ESP32 over BLE to control motors
 
-Ideas:
-- WASM binaries to decouple autonomy logic
-- Websockets for performant communication
+- TODO: enable dynamic WASM loading through LocalSend
+
+### WASM module:
+
+- imports read sensor functions from iOS host
+- multi-threaded application with autonomy logic
+- compiled using WASI-SDK and threading
+    - C++: https://github.com/WebAssembly/wasi-sdk
+
+### ESP32:
+
+- recieves commands over BLE and uses SimpleFOC to control motors
 
 ## Setup
 

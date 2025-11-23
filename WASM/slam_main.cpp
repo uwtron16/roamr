@@ -1,28 +1,23 @@
-#include <iostream>
 #include <mutex>
 #include <thread>
+#include <chrono>
+
+#include "imu.h"
+#include "telemetry.h"
 
 int main(){
-    std::mutex m;
-    int shared_data = 0;
+    std::mutex m_imu;
+    IMUData data;
 
-    auto logSensor = [&m, &shared_data](){
+    std::thread imu_thread([&m_imu, &data](){
         while(true){
-            std::lock_guard<std::mutex> lk(m);
-            std::cout << "Logging " << shared_data << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(IMUIntervalMs));
+            std::lock_guard<std::mutex> lk(m_imu);
+            read_imu(&data);
         }
-    };
+    });
+    std::thread telemetry_thread(log_sensors, std::ref(m_imu), std::cref(data));
 
-    auto incrementData = [&m, &shared_data](){
-        while(true){
-            std::lock_guard<std::mutex> lk(m);
-            ++shared_data;
-        }
-    };
-
-    std::thread t1(logSensor);
-    std::thread t2(incrementData);
-
-    t1.join();
-    t2.join();
+    imu_thread.join();
+    telemetry_thread.join();
 }
