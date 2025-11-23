@@ -43,7 +43,7 @@ pre-commit
 - Open/build iOS app.
 - Connect to bluetooth using the app
 - Drive robot!
-  
+
 ### Optional:
 - Open HTML page in webpage folder.
 - Run websocket on the websocket page of the app
