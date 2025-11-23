@@ -19,6 +19,7 @@ class BluetoothManager: NSObject, ObservableObject {
 
     private var centralManager: CBCentralManager!
     private var writeCharacteristic: CBCharacteristic?
+    private var shouldStartScanningWhenReady = false
 
     // UUIDs matching ESP32 C6 configuration
     private let serviceUUID = CBUUID(string: "00FF")
@@ -30,6 +31,12 @@ class BluetoothManager: NSObject, ObservableObject {
     }
 
     func startScanning() {
+        guard centralManager.state == .poweredOn else {
+            shouldStartScanningWhenReady = true
+            connectionStatus = "Waiting for Bluetooth..."
+            return
+        }
+        shouldStartScanningWhenReady = false
         discoveredDevices.removeAll()
         isScanning = true
         connectionStatus = "Scanning..."
@@ -54,6 +61,7 @@ class BluetoothManager: NSObject, ObservableObject {
         if let device = connectedDevice {
             centralManager.cancelPeripheralConnection(device)
         }
+		startScanning()
     }
 
     func sendMessage(_ message: String) {
@@ -64,8 +72,9 @@ class BluetoothManager: NSObject, ObservableObject {
             return
         }
 
-		device.writeValue(data, for: characteristic, type: .withResponse)
+		device.writeValue(data, for: characteristic, type: .withoutResponse)
         lastMessage = "Sent: \(message)"
+        print("📤 Sent: \(message)")
     }
 }
 
@@ -75,6 +84,9 @@ extension BluetoothManager: CBCentralManagerDelegate {
         switch central.state {
         case .poweredOn:
             connectionStatus = "Bluetooth Ready"
+            if shouldStartScanningWhenReady {
+                startScanning()
+            }
         case .poweredOff:
             connectionStatus = "Bluetooth is Off"
         case .unauthorized:
@@ -136,9 +148,44 @@ extension BluetoothManager: CBPeripheralDelegate {
         }
     }
 
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            print("❌ Failed to subscribe to notifications: \(error.localizedDescription)")
+            return
+        }
+
+        if characteristic.isNotifying {
+            print("✅ Successfully subscribed to notifications")
+        } else {
+            print("⚠️ Notifications disabled")
+        }
+    }
+
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
             lastMessage = "Send Error: \(error.localizedDescription)"
+            print("Write error: \(error.localizedDescription)")
+        } else {
+            print("Write successful for characteristic: \(characteristic.uuid)")
+        }
+    }
+
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            print("Error receiving data: \(error.localizedDescription)")
+            return
+        }
+
+        guard let data = characteristic.value else {
+            print("No data received")
+            return
+        }
+
+        if let response = String(data: data, encoding: .utf8) {
+            print("📱 Received response: \(response)")
+            lastMessage = "Received: \(response)"
+        } else {
+            print("📱 Received data (hex): \(data.map { String(format: "%02x", $0) }.joined(separator: " "))")
         }
     }
 }
