@@ -51,9 +51,9 @@ struct SettingsPage: View {
 		// userInitiated gives high priority to the thread
         DispatchQueue.global(qos: .userInitiated).async {
             IMUManager.shared.start()
-            
+
             WasmManager.shared.runWasmFile(named: "slam_main")
-            
+
             IMUManager.shared.stop()
         }
     }

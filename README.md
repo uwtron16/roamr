@@ -10,7 +10,7 @@ What if we turned the iPhone into a robot?
 
 ## Architecture
 
-### iOS host app: 
+### iOS host app:
 
 - exposes the core sensor data through iOS APIs
     - Camera
