@@ -53,7 +53,7 @@ void setup() {
 
   sensor1.init();
   motor1.linkSensor(&sensor1);
-  
+
   driver1.voltage_power_supply = 12;
   driver1.voltage_limit = 12;
   if (!driver1.init()){
@@ -76,7 +76,7 @@ void setup() {
     return;
   }
 
-  motor1.target = 0.5; // Nm  
+  motor1.target = 0.5; // Nm
 
   command.add('M', doMotor, "Motor");
   Serial.println(F("Motor ready."));

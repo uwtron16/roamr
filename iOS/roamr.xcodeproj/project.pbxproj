@@ -305,6 +305,8 @@
 				DEVELOPMENT_TEAM = 542KRJUPYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Our robot wants to talk to its friends!";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Our robot needs to talk to its friends!";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Our robot needs your camera to see where it’s going—otherwise it just bumps into stuff!";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Our robot needs your location to know where it is—otherwise it might get lost on its adventure!";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -348,6 +350,8 @@
 				DEVELOPMENT_TEAM = 542KRJUPYH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Our robot wants to talk to its friends!";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Our robot needs to talk to its friends!";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Our robot needs your camera to see where it’s going—otherwise it just bumps into stuff!";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Our robot needs your location to know where it is—otherwise it might get lost on its adventure!";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

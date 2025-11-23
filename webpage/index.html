@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client - Roamr</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .status.disconnected {
+            background: #fee;
+            color: #c00;
+        }
+
+        .status.connected {
+            background: #efe;
+            color: #0a0;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status.disconnected .status-dot {
+            background: #c00;
+        }
+
+        .status.connected .status-dot {
+            background: #0a0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-connect {
+            background: #0a0;
+            color: white;
+        }
+
+        .btn-connect:hover:not(:disabled) {
+            background: #080;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 170, 0, 0.3);
+        }
+
+        .btn-disconnect {
+            background: #c00;
+            color: white;
+        }
+
+        .btn-disconnect:hover:not(:disabled) {
+            background: #a00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(204, 0, 0, 0.3);
+        }
+
+        .btn-send {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-send:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .message-log {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .message-log h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .message-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .message-text {
+            color: #333;
+            font-family: monospace;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #1976d2;
+        }
+
+        .joystick-container {
+            display: none;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 15px;
+        }
+
+        .joystick-container.active {
+            display: block;
+        }
+
+        .joystick-title {
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .joystick-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #joystick {
+            background: #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            touch-action: none;
+        }
+
+        .motor-display {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 14px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .motor-value {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .motor-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .motor-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Roamr WebSocket Client</h1>
+
+        <div id="status" class="status disconnected">
+            <span class="status-dot"></span>
+            <span>Disconnected</span>
+        </div>
+
+        <div class="info-box">
+            💡 Enter the IP address shown on your iPhone app (e.g., 192.168.1.100)
+        </div>
+
+        <div class="input-group">
+            <label for="ipAddress">iPhone IP Address:</label>
+            <input
+                type="text"
+                id="ipAddress"
+                placeholder="192.168.1.100"
+                value="192.168.1.100"
+            >
+        </div>
+
+        <button id="connectBtn" class="btn-connect" onclick="connect()">
+            Connect to iPhone
+        </button>
+
+        <button id="disconnectBtn" class="btn-disconnect" onclick="disconnect()" style="display: none;">
+            Disconnect
+        </button>
+
+        <div id="joystickContainer" class="joystick-container">
+            <div class="joystick-title">🕹️ Motor Control</div>
+            <div class="joystick-wrapper">
+                <canvas id="joystick" width="250" height="250"></canvas>
+                <div class="motor-display">
+                    <div class="motor-value">
+                        <span class="motor-label">LEFT</span>
+                        <span id="leftMotor" class="motor-number">0%</span>
+                    </div>
+                    <div class="motor-value">
+                        <span class="motor-label">RIGHT</span>
+                        <span id="rightMotor" class="motor-number">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="message">Message to Send:</label>
+            <input
+                type="text"
+                id="message"
+                placeholder="Type your message here..."
+                disabled
+                onkeypress="if(event.key === 'Enter') sendMessage()"
+            >
+        </div>
+
+        <button id="sendBtn" class="btn-send" onclick="sendMessage()" disabled>
+            Send Message
+        </button>
+
+        <div class="message-log">
+            <h3>Message Log</h3>
+            <div id="messageLog"></div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        const statusEl = document.getElementById('status');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const ipInput = document.getElementById('ipAddress');
+        const messageInput = document.getElementById('message');
+        const sendBtn = document.getElementById('sendBtn');
+        const messageLog = document.getElementById('messageLog');
+        const joystickContainer = document.getElementById('joystickContainer');
+
+        // Joystick variables
+        let joystickTimer = null;
+        const SEND_INTERVAL = 50; // 50ms
+        const HOLD_DURATION = 100; // 100ms
+
+        function updateStatus(connected) {
+            if (connected) {
+                statusEl.className = 'status connected';
+                statusEl.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'block';
+                ipInput.disabled = true;
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                joystickContainer.classList.add('active');
+                initJoystick();
+            } else {
+                statusEl.className = 'status disconnected';
+                statusEl.innerHTML = '<span class="status-dot"></span><span>Disconnected</span>';
+                connectBtn.style.display = 'block';
+                disconnectBtn.style.display = 'none';
+                ipInput.disabled = false;
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+                joystickContainer.classList.remove('active');
+            }
+        }
+
+        function addLog(message, type = 'info') {
+            const logItem = document.createElement('div');
+            logItem.className = 'message-item';
+
+            const time = new Date().toLocaleTimeString();
+            logItem.innerHTML = `
+                <div class="message-time">${time}</div>
+                <div class="message-text">${message}</div>
+            `;
+
+            messageLog.insertBefore(logItem, messageLog.firstChild);
+        }
+
+        function connect() {
+            const ip = ipInput.value.trim();
+            if (!ip) {
+                alert('Please enter an IP address');
+                return;
+            }
+
+            const wsUrl = `ws://${ip}:8080`;
+            addLog(`Connecting to ${wsUrl}...`);
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = function() {
+                    updateStatus(true);
+                    addLog('✅ Connected to iPhone!');
+                };
+
+                ws.onmessage = function(event) {
+                    addLog(`📱 Received: ${event.data}`);
+                };
+
+                ws.onerror = function(error) {
+                    addLog('❌ Connection error');
+                    console.error('WebSocket error:', error);
+                };
+
+                ws.onclose = function() {
+                    updateStatus(false);
+                    addLog('❌ Disconnected from iPhone');
+                    ws = null;
+                };
+            } catch (error) {
+                addLog(`❌ Failed to connect: ${error.message}`);
+                console.error('Connection error:', error);
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(message);
+                addLog(`📤 Sent: ${message}`);
+                messageInput.value = '';
+            } else {
+                alert('Not connected to iPhone');
+            }
+        }
+
+        // Joystick functionality
+        function initJoystick() {
+            const canvas = document.getElementById('joystick');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const maxRadius = canvas.width / 2 - 40;
+            const knobRadius = 35;
+
+            let isDragging = false;
+            let knobX = centerX;
+            let knobY = centerY;
+
+            function drawJoystick() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw base circle
+                ctx.fillStyle = '#ddd';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, canvas.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw directional indicators
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('▲', centerX, centerY - maxRadius + 30);
+                ctx.fillText('▼', centerX, centerY + maxRadius - 15);
+                ctx.fillText('◀', centerX - maxRadius + 20, centerY + 5);
+                ctx.fillText('▶', centerX + maxRadius - 20, centerY + 5);
+
+                // Draw center dot
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw knob
+                const gradient = ctx.createRadialGradient(knobX - 10, knobY - 10, 5, knobX, knobY, knobRadius);
+                gradient.addColorStop(0, '#88f');
+                gradient.addColorStop(1, '#44c');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(knobX, knobY, knobRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Knob shadow
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 3;
+            }
+
+            function calculateMotorValues() {
+                // Normalize to -100 to 100
+                const x = ((knobX - centerX) / maxRadius) * 100;
+                const y = -((knobY - centerY) / maxRadius) * 100; // Invert Y
+
+                // Differential drive
+                let left = y + x;
+                let right = y - x;
+
+                // Clamp to -100 to 100
+                left = Math.max(-100, Math.min(100, left));
+                right = Math.max(-100, Math.min(100, right));
+
+                return {
+                    left: Math.round(left),
+                    right: Math.round(right)
+                };
+            }
+
+            function updateMotorDisplay() {
+                const motors = calculateMotorValues();
+                document.getElementById('leftMotor').textContent = `${motors.left}%`;
+                document.getElementById('rightMotor').textContent = `${motors.right}%`;
+            }
+
+            function sendMotorCommand() {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    const motors = calculateMotorValues();
+                    const message = `${motors.left} ${motors.right} ${HOLD_DURATION}`;
+                    ws.send(message);
+                }
+            }
+
+            function startSending() {
+                sendMotorCommand();
+                joystickTimer = setInterval(sendMotorCommand, SEND_INTERVAL);
+            }
+
+            function stopSending() {
+                if (joystickTimer) {
+                    clearInterval(joystickTimer);
+                    joystickTimer = null;
+                }
+                // Send stop command
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(`0 0 ${HOLD_DURATION}`);
+                }
+            }
+
+            function updateKnobPosition(clientX, clientY) {
+                const rect = canvas.getBoundingClientRect();
+                const x = clientX - rect.left;
+                const y = clientY - rect.top;
+
+                const dx = x - centerX;
+                const dy = y - centerY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance <= maxRadius) {
+                    knobX = x;
+                    knobY = y;
+                } else {
+                    const angle = Math.atan2(dy, dx);
+                    knobX = centerX + Math.cos(angle) * maxRadius;
+                    knobY = centerY + Math.sin(angle) * maxRadius;
+                }
+
+                drawJoystick();
+                updateMotorDisplay();
+            }
+
+            // Mouse events
+            canvas.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                updateKnobPosition(e.clientX, e.clientY);
+                startSending();
+            });
+
+            // Track mouse movement globally when dragging
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    updateKnobPosition(e.clientX, e.clientY);
+                }
+            });
+
+            // Release anywhere on the page
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    knobX = centerX;
+                    knobY = centerY;
+                    drawJoystick();
+                    updateMotorDisplay();
+                    stopSending();
+                }
+            });
+
+            // Touch events
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isDragging = true;
+                const touch = e.touches[0];
+                updateKnobPosition(touch.clientX, touch.clientY);
+                startSending();
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (isDragging) {
+                    const touch = e.touches[0];
+                    updateKnobPosition(touch.clientX, touch.clientY);
+                }
+            });
+
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (isDragging) {
+                    isDragging = false;
+                    knobX = centerX;
+                    knobY = centerY;
+                    drawJoystick();
+                    updateMotorDisplay();
+                    stopSending();
+                }
+            });
+
+            // Initial draw
+            drawJoystick();
+            updateMotorDisplay();
+        }
+
+        // Focus message input when page loads
+        window.addEventListener('load', () => {
+            ipInput.focus();
+        });
+    </script>
+</body>
+</html>

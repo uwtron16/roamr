@@ -11,12 +11,16 @@ enum AppPage {
 	case ARView
 	case data
 	case settings
+	case bluetooth
+	case websocket
 
 	var iconName: String {
 		switch self {
 		case .ARView: return "macbook.and.vision.pro"
 		case .data: return "text.page.fill"
+		case .bluetooth: return "wifi"
 		case .settings: return "gearshape.fill"
+		case .websocket: return "network"
 		}
 	}
 }
@@ -38,13 +42,22 @@ struct FloatingBubbleTabBar: View {
 				.transition(.scale.combined(with: .opacity))
 			}
 
+			TabBubble(page: .bluetooth, currentPage: $currentPage)
+
+			TabBubble(page: .websocket, currentPage: $currentPage)
+
 			TabBubble(page: .settings, currentPage: $currentPage)
 		}
 		.padding(12)
 		.background(
-			Capsule()
-				.fill(.ultraThinMaterial)
-				.shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+			GeometryReader { geo in
+				Capsule()
+					.fill(.ultraThinMaterial)
+					.shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+					.onAppear {
+						AppConstants.shared.tabBarHeight = geo.size.height
+					}
+			}
 		)
 		.animation(.spring(response: 0.4, dampingFraction: 0.7), value: currentPage)
 	}
