@@ -58,7 +58,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
                 .len = ESP_UUID_LEN_16,
                 .uuid.uuid16 = GATTS_CHAR_UUID,
             }, ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
-            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
+            ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_WRITE_NR,
             NULL, NULL);
             break;
 
