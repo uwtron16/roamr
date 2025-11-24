@@ -36,3 +36,8 @@ See the [Getting Started Guide](https://docs.espressif.com/projects/esp-idf/en/l
 ### Monitor the Output
 
 Run `idf.py monitor` to monitor the project. Or, you can the TV icon to monitor the serial output from the ESP32.
+
+
+## SimpleFOC
+
+SimpleFOC and SimpleFOC drivers are cloned into components.
