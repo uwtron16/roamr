@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
 	@EnvironmentObject var lidarManager: LiDARManager
+	@StateObject private var bluetoothManager = BluetoothManager()
 	@State var currentPage: AppPage = .ARView
 
 	var body: some View {
@@ -22,6 +23,10 @@ struct ContentView: View {
 						EmptyView()
 					case .settings:
 						SettingsPage()
+					case .bluetooth:
+						BluetoothView()
+					case .websocket:
+						WebSocketServerView()
 					}
 				}
 				.ignoresSafeArea()
@@ -41,5 +46,6 @@ struct ContentView: View {
 				}
 			}
 		}
+		.environmentObject(bluetoothManager)
 	}
 }
