@@ -55,7 +55,27 @@ struct LiDARView: View {
 							.foregroundColor(.white)
 							.cornerRadius(20)
 					}
+
 					Spacer()
+
+					// Video streaming toggle
+					Button {
+						lidarManager.toggleVideoStreaming()
+					} label: {
+						HStack(spacing: 6) {
+							Image(systemName: lidarManager.videoStreamManager.isStreaming ? "video.fill" : "video.slash")
+							Text(lidarManager.videoStreamManager.isStreaming ? "Stop Stream" : "Start Stream")
+						}
+						.font(.headline)
+						.padding(.horizontal, 14)
+						.padding(.vertical, 10)
+						.background(lidarManager.videoStreamManager.isStreaming ? Color.red : Color.blue)
+						.foregroundColor(.white)
+						.cornerRadius(20)
+					}
+
+					Spacer()
+
 					Button {
 						lidarManager.toggleSession()
 					} label: {

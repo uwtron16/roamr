@@ -9,7 +9,7 @@ import SwiftUI
 
 struct WebSocketServerView: View {
     @Environment(\.safeAreaInsets) private var safeAreaInsets
-    @StateObject private var serverManager = WebSocketServerManager()
+    @EnvironmentObject var serverManager: WebSocketServerManager
     @EnvironmentObject var bluetoothManager: BluetoothManager
 
     var body: some View {

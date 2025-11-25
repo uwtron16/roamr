@@ -21,10 +21,18 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 	var serverURL: String = "ws://192.168.1.2:8080"
 
 	let session = ARSession()
+	let videoStreamManager = VideoStreamManager()
+	weak var webSocketManager: WebSocketServerManager?
 
 	override init() {
 		super.init()
 		session.delegate = self
+		videoStreamManager.configure(arSession: session, targetFPS: 50, quality: 0.6)
+
+		// Set callback for encoded frames
+		videoStreamManager.onFrameEncoded = { [weak self] data in
+			self?.webSocketManager?.broadcastBinaryData(data)
+		}
 	}
 
 	func startSession() {
@@ -42,7 +50,7 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 		if ARWorldTrackingConfiguration.supportsSceneReconstruction(.mesh) {
 			config.sceneReconstruction = .mesh
 		}
-		config.environmentTexturing = .automatic
+//		config.environmentTexturing = .automatic
 
 		session.run(config)
 		isActive = true
@@ -63,15 +71,34 @@ final class LiDARManager: NSObject, ObservableObject, ARSessionDelegate {
 		}
 	}
 
+	func startVideoStreaming() {
+		videoStreamManager.startStreaming()
+	}
+
+	func stopVideoStreaming() {
+		videoStreamManager.stopStreaming()
+	}
+
+	func toggleVideoStreaming() {
+		if videoStreamManager.isStreaming {
+			stopVideoStreaming()
+		} else {
+			startVideoStreaming()
+		}
+	}
+
 	// MARK: - ARSessionDelegate
 	func session(_ session: ARSession, didUpdate frame: ARFrame) {
+		// Process video frame for streaming
+		videoStreamManager.processFrame(frame)
+
 		// Use rawFeaturePoints (fast, already computed by ARKit)
-		if let pointCloud = frame.rawFeaturePoints {
-			let points = pointCloud.points // [SIMD3<Float>]
-			handle(points: points, cameraTransform: frame.camera.transform)
-		} else {
-			// If rawFeaturePoints not available, optionally handle sceneDepth; omitted here for brevity
-		}
+//		if let pointCloud = frame.rawFeaturePoints {
+//			let points = pointCloud.points // [SIMD3<Float>]
+//			handle(points: points, cameraTransform: frame.camera.transform)
+//		} else {
+//			// If rawFeaturePoints not available, optionally handle sceneDepth; omitted here for brevity
+//		}
 	}
 
 	private func handle(points: [SIMD3<Float>], cameraTransform: simd_float4x4) {
